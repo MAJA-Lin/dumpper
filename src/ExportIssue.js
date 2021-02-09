@@ -14,9 +14,13 @@ class ExportIssue {
     }
 
     fetchAllIssues() {
-        Promise.all(this.typeFilter.map((type) => {
+        return Promise.all(this.typeFilter.map((type) => {
             return this.fetchIssues(1, type);
-        })).then(console.log);
+        }))
+        // .then(() => {
+        //     console.log(this.result)
+        // })
+
     }
 
     fetchIssues(page, filter) {
@@ -33,12 +37,13 @@ class ExportIssue {
             .then(response => response.json())
             .then((response) => {
                 if (response.total_count >= (page * this.perPage)) {
-                    this.fetchIssues(page + 1, filter)
+                    page++
+                    this.fetchIssues(page, filter)
                 } else {
                     resolve()
                 }
 
-                this.result.concat(response.items.map((item) => {
+                this.result = this.result.concat(response.items.map((item) => {
                     const storyPoint = item.labels.find((label) => {
                         return label.name.includes('Story Point')
                     }) || 0
