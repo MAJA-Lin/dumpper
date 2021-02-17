@@ -60,7 +60,7 @@ class ExportIssue {
 
                 return {
                     id: item.id,
-                    title: item.title.replace(',', '，'),
+                    title: item.title.replace(/,/g, '，'),
                     url: item.html_url,
                     // description: item.body.slice(0, 100),
                     milestoneTitle: item?.milestone?.title || '',
