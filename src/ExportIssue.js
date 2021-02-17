@@ -100,8 +100,6 @@ obj.fetchAllIssues().then(() => {
     let csvContent = lineArray.join("\n");
     return csvContent;
 }).then((csvContent) => {
-    console.log(typeof(csvContent));
-    console.log(csvContent)
     let blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     var link = document.createElement("a");
     if (link.download !== undefined) { // feature detection
