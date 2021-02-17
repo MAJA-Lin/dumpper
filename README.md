@@ -5,8 +5,8 @@ Extract stuff from github issues
 ## Steps
 
 - Create *Personal Access token* with at least **full access to repo section**
-- Copy code snippet from ./src/ExportIssue.js to browser -> developer console
-- Change token & author and paste it into the block.
+- Copy code snippet from [ExportIssue.js](./src/ExportIssue.js) to browser -> developer console
+- Change token & author and paste it into [this block](./src/ExportIssue.js#L77L81)
 
 ```js
 let obj = new ExportIssue({
