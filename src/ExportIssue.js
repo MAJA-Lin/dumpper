@@ -60,13 +60,13 @@ class ExportIssue {
 
                 return {
                     id: item.id,
-                    title: item.title,
+                    title: item.title.replace(',', '，'),
                     url: item.html_url,
-                    description: item.body,
+                    // description: item.body.slice(0, 100),
                     milestoneTitle: item?.milestone?.title || '',
                     createdAt: item.created_at,
-                    assignees: item.assignees.map((a) => a.login).join(','),
-                    labels: item.labels.map((l) => l.name).join(','),
+                    assignees: item.assignees.map((a) => a.login).join('，'),
+                    labels: item.labels.map((l) => l.name).join('，'),
                     storyPoint: storyPoint && parseFloat(storyPoint.name.replace(' Story Point', ''))
                 }
             }));
@@ -81,5 +81,31 @@ let obj = new ExportIssue({
 });
 
 obj.fetchAllIssues().then(() => {
-    console.table(obj.result)
-})
+    var lineArray = [];
+
+    obj.result.forEach(function (value, index) {
+        let line = Object.values(value).join(",");
+        lineArray.push(index == 0
+            // ? "id,title,url,description,milestoneTitle,createdAt,assignees,labels,storyPoint\n" + line
+            ? "id,title,url,milestoneTitle,createdAt,assignees,labels,storyPoint\n" + line
+            : line
+        );
+    });
+    let csvContent = lineArray.join("\n");
+    return csvContent;
+}).then((csvContent) => {
+    console.log(typeof(csvContent));
+    console.log(csvContent)
+    let blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    var link = document.createElement("a");
+    if (link.download !== undefined) { // feature detection
+        // Browsers that support HTML5 download attribute
+        var url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", 'github_vt_working_history.csv');
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+});
