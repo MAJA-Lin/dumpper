@@ -5,8 +5,9 @@ Extract stuff from github issues
 ## Steps
 
 - Create *Personal Access token* with at least **full access to repo section**
+- Go to the Github pages (to skip Content Security Policy check)
 - Copy code snippet from [ExportIssue.js](./src/ExportIssue.js) to browser -> developer console
-- Change token & author and paste it into [this block](./src/ExportIssue.js#L83L87)
+- Paste the following code. You need to change *YOUR_GITHUB_PERSONAL_ACCESS_TOKEN* and *YOUR_AUTHOR_NAME* to your own.
 
 ```js
 let obj = new ExportIssue({
@@ -14,11 +15,28 @@ let obj = new ExportIssue({
     author: 'YOUR_AUTHOR_NAME',
     perPage: 100
 });
+
+obj.fetchAllIssues().then(() => {
+    obj.removeDuplicatedData();
+})
+.then(() => {
+    let csvContent = obj.toCSV();
+    exportAsFile(csvContent, 'github_vt_working_history.csv', 'text/csv;charset=utf-8;');
+});
 ```
 
-- Run it on Github pages (to skip Content Security Policy check)
-
 Now you have your issues history in a .CSV file. Enjoy it!
+
+*Optional*: For json file, you can run
+
+```js
+obj.fetchAllIssues().then(() => {
+    obj.removeDuplicatedData();
+})
+.then(() => {
+    exportAsFile(JSON.stringify(obj.result), 'github_vt_working_history.json', 'application/json;');
+})
+```
 
 
 Issues searching API example:

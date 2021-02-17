@@ -60,62 +60,59 @@ class ExportIssue {
 
                 return {
                     id: item.id,
-                    title: item.title.replace(/,/g, '，'),
+                    title: item.title,
                     url: item.html_url,
-                    // description: (() => {
-                    //     return item.body.slice(0, 100)
-                    //         .replace(/,/g, '，')
-                    //         .replace(/\n/g, ' ')
-                    //         .replace(/;/g, '；')
-                    //         .replace(/`/g, '~')
-                    // })(),
+                    description: item.body.slice(0, 128),
                     milestoneTitle: item?.milestone?.title || '',
                     createdAt: item.created_at,
-                    assignees: item.assignees.map((a) => a.login).join('，'),
-                    labels: item.labels.map((l) => l.name).join('，'),
+                    assignees: item.assignees.map((a) => a.login).join(','),
+                    labels: item.labels.map((l) => l.name).join(','),
                     storyPoint: storyPoint && parseFloat(storyPoint.name.replace(' Story Point', ''))
                 }
             }));
         });
     }
+
+    removeDuplicatedData() {
+        let seen = {};
+        obj.result = obj.result.filter(function(item) {
+            let k = JSON.stringify(item);
+            return seen.hasOwnProperty(k) ? false : (seen[k] = true);
+        })
+    }
+
+    toCSV() {
+        let lineArray = [];
+
+        obj.result.forEach(function (value, index) {
+            delete value.description;
+            value.title = value.title.replace(/,/g, '，');
+            value.assignees = value.assignees.replace(/,/g, '，');
+            value.labels = value.labels.replace(/,/g, '，');
+
+            let line = Object.values(value).join(",");
+            lineArray.push(index == 0
+                ? "id,title,url,milestoneTitle,createdAt,assignees,labels,storyPoint\n" + line
+                : line
+            );
+        });
+        let csvContent = lineArray.join("\n");
+        return csvContent;
+    }
 }
 
-let obj = new ExportIssue({
-    token: '',
-    author: '',
-    perPage: 100
-});
+function exportAsFile(data, fileName, dataType) {
+    let blob = new Blob([data], { type: dataType });
 
-obj.fetchAllIssues().then(() => {
-    let seen = {};
-    obj.result = obj.result.filter(function(item) {
-        let k = JSON.stringify(item);
-        return seen.hasOwnProperty(k) ? false : (seen[k] = true);
-    })
-}).then(() => {
-    var lineArray = [];
-
-    obj.result.forEach(function (value, index) {
-        let line = Object.values(value).join(",");
-        lineArray.push(index == 0
-            // ? "id,title,url,description,milestoneTitle,createdAt,assignees,labels,storyPoint\n" + line
-            ? "id,title,url,milestoneTitle,createdAt,assignees,labels,storyPoint\n" + line
-            : line
-        );
-    });
-    let csvContent = lineArray.join("\n");
-    return csvContent;
-}).then((csvContent) => {
-    let blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     var link = document.createElement("a");
     if (link.download !== undefined) { // feature detection
         // Browsers that support HTML5 download attribute
         var url = URL.createObjectURL(blob);
         link.setAttribute("href", url);
-        link.setAttribute("download", 'github_vt_working_history.csv');
+        link.setAttribute("download", fileName);
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
     }
-});
+}
