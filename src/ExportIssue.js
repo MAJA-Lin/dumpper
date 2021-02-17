@@ -62,7 +62,13 @@ class ExportIssue {
                     id: item.id,
                     title: item.title.replace(/,/g, '，'),
                     url: item.html_url,
-                    // description: item.body.slice(0, 100),
+                    // description: (() => {
+                    //     return item.body.slice(0, 100)
+                    //         .replace(/,/g, '，')
+                    //         .replace(/\n/g, ' ')
+                    //         .replace(/;/g, '；')
+                    //         .replace(/`/g, '~')
+                    // })(),
                     milestoneTitle: item?.milestone?.title || '',
                     createdAt: item.created_at,
                     assignees: item.assignees.map((a) => a.login).join('，'),
