@@ -81,6 +81,12 @@ let obj = new ExportIssue({
 });
 
 obj.fetchAllIssues().then(() => {
+    let seen = {};
+    obj.result = obj.result.filter(function(item) {
+        let k = JSON.stringify(item);
+        return seen.hasOwnProperty(k) ? false : (seen[k] = true);
+    })
+}).then(() => {
     var lineArray = [];
 
     obj.result.forEach(function (value, index) {
