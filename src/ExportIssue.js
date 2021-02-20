@@ -66,6 +66,7 @@ class ExportIssue {
                     createdAt: item.created_at,
                     assignees: item.assignees.map((a) => a.login).join(','),
                     labels: item.labels.map((l) => l.name).join(','),
+                    state: item.state,
                     storyPoint: storyPoint && parseFloat(storyPoint.name.replace(' Story Point', ''))
                 }
             }));
@@ -91,7 +92,7 @@ class ExportIssue {
 
             let line = Object.values(value).join(",");
             lineArray.push(index == 0
-                ? "id,title,url,milestoneTitle,createdAt,assignees,labels,storyPoint\n" + line
+                ? "id,title,url,milestoneTitle,createdAt,assignees,labels,state,storyPoint\n" + line
                 : line
             );
         });
