@@ -39,6 +39,25 @@ obj.fetchAllIssues().then(() => {
 ```
 
 
+For people who might have issues more than 1000 (which hits the GitHub search limitation)
+
+```js
+obj.fetchAllIssues()
+.then(() => {
+    obj.removeDuplicatedData();
+    obj.sortByCreatedAt();
+})
+.then(() => {
+    return new Promise((resolve) => {
+        setTimeout(() => resolve(), 1000 * 5);
+    })
+})
+.then(() => {
+    exportAsFile(JSON.stringify(obj.result), 'github_vt_working_history.json', 'application/json;');
+})
+```
+
+
 Issues searching API example:
 https://api.github.com/search/issues?q=api+type:issue+repo:voicetube/voicetube_web+author:majaja&sort=created&order=desc&per_page=50&page=1
 

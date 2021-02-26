@@ -81,6 +81,12 @@ class ExportIssue {
         })
     }
 
+    sortByCreatedAt() {
+        obj.result.sort((a, b) => {
+            return (a.date < b.date) ? -1 : ((a.date > b.date) ? 1 : 0);
+        })
+    }
+
     toCSV() {
         let lineArray = [];
 
