@@ -50,6 +50,22 @@ obj.fetchAllIssues()
 .then(() => {
     return new Promise((resolve) => {
         setTimeout(() => resolve(), 1000 * 5);
+    }).then(() => {
+        return obj.result[Math.ceil(obj.result.length * 3/4)].createdAt;
+    })
+})
+.then((createdAt) => {
+    return obj.fetchAllIssues(createdAt);
+})
+.then(() => {
+    obj.removeDuplicatedData();
+    obj.sortByCreatedAt();
+})
+.then(() => {
+    return new Promise((resolve) => {
+        setTimeout(() => resolve(), 1000 * 4);
+    }).then(() => {
+        return obj.result[Math.ceil(obj.result.length * 3/4)].createdAt;
     })
 })
 .then(() => {
