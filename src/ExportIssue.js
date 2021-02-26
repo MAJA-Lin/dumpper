@@ -13,22 +13,21 @@ class ExportIssue {
         ]
     }
 
-    async fetchAllIssues() {
+    async fetchAllIssues(createdAt) {
         const pageCounts = await Promise.all(this.typeFilter.map((type) => {
-            return this.fetchMaxPage(type);
+            return this.fetchMaxPage(type, createdAt);
         }));
-
         return Promise.all(this.typeFilter.flatMap((type, index) => {
-            return Array(pageCounts[index]).fill('').map((item, i) => {
-                return this.fetchIssues(i, type);
+            return Array(pageCounts[index] > 10 ? 10 : pageCounts[index]).fill('').map((item, i) => {
+                return this.fetchIssues(i, type, createdAt);
             });
         }))
     }
 
-    fetchMaxPage(filter) {
+    fetchMaxPage(filter, createdAt) {
         return fetch(
             `https://api.github.com/search/issues?q=+type:issue+repo:voicetube/voicetube_web+`
-            + `${filter}&sort=created&order=desc&per_page=1&page=1`, {
+            + `${filter}${createdAt ? `+created:<${createdAt}` : ''}&sort=created&order=desc&per_page=1&page=1`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/vnd.github.v3+json',
@@ -41,10 +40,10 @@ class ExportIssue {
         });
     }
 
-    fetchIssues(page, filter) {
+    fetchIssues(page, filter, createdAt) {
         return fetch(
             `https://api.github.com/search/issues?q=+type:issue+repo:voicetube/voicetube_web+`
-            + `${filter}&sort=created&order=desc&per_page=${this.perPage}&page=${page}`, {
+            + `${filter}${createdAt ? `+created:<${createdAt}` : ''}&sort=created&order=desc&per_page=${this.perPage}&page=${page}`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/vnd.github.v3+json',
@@ -56,7 +55,7 @@ class ExportIssue {
             this.result = this.result.concat(response.items.map((item) => {
                 const storyPoint = item.labels.find((label) => {
                     return label.name.includes('Story Point')
-                }) || 0
+                }) || 0;
 
                 return {
                     id: item.id,
@@ -67,6 +66,7 @@ class ExportIssue {
                     createdAt: item.created_at,
                     assignees: item.assignees.map((a) => a.login).join(','),
                     labels: item.labels.map((l) => l.name).join(','),
+                    state: item.state,
                     storyPoint: storyPoint && parseFloat(storyPoint.name.replace(' Story Point', ''))
                 }
             }));
@@ -81,6 +81,12 @@ class ExportIssue {
         })
     }
 
+    sortByCreatedAt() {
+        obj.result.sort((a, b) => {
+            return (a.createdAt > b.createdAt) ? -1 : ((a.createdAt < b.createdAt) ? 1 : 0);
+        })
+    }
+
     toCSV() {
         let lineArray = [];
 
@@ -92,7 +98,7 @@ class ExportIssue {
 
             let line = Object.values(value).join(",");
             lineArray.push(index == 0
-                ? "id,title,url,milestoneTitle,createdAt,assignees,labels,storyPoint\n" + line
+                ? "id,title,url,milestoneTitle,createdAt,assignees,labels,state,storyPoint\n" + line
                 : line
             );
         });
